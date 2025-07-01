@@ -2,7 +2,9 @@ const nodemailer = require('nodemailer');
 
 exports.handler = async function(event, context) {
   try {
-    const { correo } = JSON.parse(event.body);
+    const data = JSON.parse(event.body);
+    console.log('Datos recibidos:', data);
+    const correo = data.email || data.correo; // soporta ambos nombres
 
     if (!correo || !correo.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
       return {
@@ -22,8 +24,8 @@ exports.handler = async function(event, context) {
     let transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'tucorreo@gmail.com',       // Cambia a tu correo real
-        pass: 'tu_clave_o_app_password',  // Cambia a tu password o app password
+        user: 'ermorro39@hotmail.com',       // Cambia a tu correo real
+        pass: 'zrch uaxm xxzd hnyo',  // Cambia a tu password o app password
       },
     });
 
@@ -47,9 +49,11 @@ exports.handler = async function(event, context) {
     };
 
   } catch (error) {
+    console.log('Error en función recuperar:', error);  // <-- Log para ver detalles en Netlify
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Error interno del servidor' }),
+      body: JSON.stringify({ error: 'Error interno del servidor', details: error.message }),
     };
   }
 };
+
