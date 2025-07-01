@@ -18,19 +18,19 @@ exports.handler = async function(event, context) {
 
     // Aquí deberías guardar token en base de datos para validar luego (fuera de este ejemplo)
 
-    const urlRecuperacion = `https://tu-proyecto.netlify.app/recuperar?token=${token}`;
+    const urlRecuperacion = `https://prestamo-recuperacion.netlify.app/recuperar?token=${token}`;
 
     // Configura el transporte SMTP (aquí con Gmail)
     let transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'ermorro39@hotmail.com',       // Cambia a tu correo real
-        pass: 'zrch uaxm xxzd hnyo',  // Cambia a tu password o app password
+        user: 'theliondjprodutions@gmail.com',       // Cambia a tu correo real
+        pass: 'usaztjxabdmxdhht',  // Cambia a tu password o app password
       },
     });
 
     let mailOptions = {
-      from: '"PrestamoApp Soporte" <tucorreo@gmail.com>',
+      from: '"PrestamoApp Soporte" <theliondjprodutions@gmail.com>',
       to: correo,
       subject: 'Recuperación de contraseña - PrestamoApp',
       html: `
