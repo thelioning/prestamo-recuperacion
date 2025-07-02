@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cambiar Contraseña - PrestamoApp</title>
+  <style>
+    body { font-family: sans-serif; background: #ecf0f1; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 300px; }
+    input, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+    button { background: #2980b9; color: white; border: none; cursor: pointer; }
+    button:disabled { background: #95a5a6; cursor: not-allowed; }
+    #mensaje { font-size: 14px; color: #c0392b; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>Cambiar Contraseña</h3>
+    <input type="password" id="nuevaClave" placeholder="Nueva contraseña" oninput="validar()" />
+    <input type="password" id="repetirClave" placeholder="Repetir nueva contraseña" oninput="validar()" />
+    <button id="btnCambiar" onclick="cambiar()" disabled>Cambiar</button>
+    <p id="mensaje"></p>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (!token) {
+      document.getElementById('mensaje').innerText = 'Token inválido o faltante.';
+      document.getElementById('btnCambiar').disabled = true;
+    }
+
+    function validar() {
+      const clave = document.getElementById('nuevaClave').value.trim();
+      const repetir = document.getElementById('repetirClave').value.trim();
+      const repetirInput = document.getElementById('repetirClave');
+      const btn = document.getElementById('btnCambiar');
+      const msg = document.getElementById('mensaje');
+
+      if (!clave || !repetir) {
+        repetirInput.style.borderColor = '#ccc';
+        btn.disabled = true;
+        msg.innerText = '';
+        return;
+      }
+
+      if (clave === repetir) {
+        repetirInput.style.borderColor = '#27ae60'; // verde
+        btn.disabled = false;
+        msg.innerText = '';
+      } else {
+        repetirInput.style.borderColor = '#e74c3c'; // rojo
+        btn.disabled = true;
+        msg.innerText = 'Las contraseñas no coinciden.';
+      }
+    }
+
+    async function cambiar() {
+      const nuevaClave = document.getElementById('nuevaClave').value.trim();
+
+      try {
+        const resp = await fetch('/.netlify/functions/cambiar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, nuevaClave })
+        });
+
+        const data = await resp.json();
+        if (resp.ok) {
+          document.getElementById('mensaje').style.color = '#27ae60';
+          document.getElementById('mensaje').innerText = 'Contraseña actualizada. Revise su correo.';
+        } else {
+          document.getElementById('mensaje').style.color = '#c0392b';
+          document.getElementById('mensaje').innerText = data.error || 'Error al cambiar contraseña.';
+        }
+      } catch (err) {
+        document.getElementById('mensaje').style.color = '#c0392b';
+        document.getElementById('mensaje').innerText = 'Error de red o servidor.';
+      }
+    }
+  </script>
+</body>
+</html>
