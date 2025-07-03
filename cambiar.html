@@ -22,62 +22,72 @@
   </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
 
-    if (!token) {
-      document.getElementById('mensaje').innerText = 'Token inválido o faltante.';
-      document.getElementById('btnCambiar').disabled = true;
+  if (!token) {
+    document.getElementById('mensaje').innerText = 'Token inválido o faltante.';
+    document.getElementById('btnCambiar').disabled = true;
+  }
+
+  function validar() {
+    const clave = document.getElementById('nuevaClave').value.trim();
+    const repetir = document.getElementById('repetirClave').value.trim();
+    const repetirInput = document.getElementById('repetirClave');
+    const btn = document.getElementById('btnCambiar');
+    const msg = document.getElementById('mensaje');
+
+    if (!clave || !repetir) {
+      repetirInput.style.borderColor = '#ccc';
+      btn.disabled = true;
+      msg.innerText = '';
+      return;
     }
 
-    function validar() {
-      const clave = document.getElementById('nuevaClave').value.trim();
-      const repetir = document.getElementById('repetirClave').value.trim();
-      const repetirInput = document.getElementById('repetirClave');
-      const btn = document.getElementById('btnCambiar');
-      const msg = document.getElementById('mensaje');
+    if (clave === repetir) {
+      repetirInput.style.borderColor = '#27ae60';
+      btn.disabled = false;
+      msg.innerText = '';
+    } else {
+      repetirInput.style.borderColor = '#e74c3c';
+      btn.disabled = true;
+      msg.innerText = 'Las contraseñas no coinciden.';
+    }
+  }
 
-      if (!clave || !repetir) {
-        repetirInput.style.borderColor = '#ccc';
-        btn.disabled = true;
-        msg.innerText = '';
-        return;
-      }
+  async function cambiar() {
+    const nuevaClave = document.getElementById('nuevaClave').value.trim();
+    const btn = document.getElementById('btnCambiar');
+    btn.disabled = true;
+    btn.innerText = 'Procesando...';
 
-      if (clave === repetir) {
-        repetirInput.style.borderColor = '#27ae60'; // verde
-        btn.disabled = false;
-        msg.innerText = '';
+    try {
+      const resp = await fetch('/.netlify/functions/cambiar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, nuevaClave })
+      });
+
+      const data = await resp.json();
+      const msgEl = document.getElementById('mensaje');
+
+      if (resp.ok) {
+        msgEl.style.color = '#27ae60';
+        msgEl.innerText = 'Contraseña actualizada. Revise su correo.';
       } else {
-        repetirInput.style.borderColor = '#e74c3c'; // rojo
-        btn.disabled = true;
-        msg.innerText = 'Las contraseñas no coinciden.';
+        msgEl.style.color = '#c0392b';
+        msgEl.innerText = data.error || 'Error al cambiar contraseña.';
+        btn.disabled = false;
+        btn.innerText = 'Cambiar';
       }
+    } catch (err) {
+      const msgEl = document.getElementById('mensaje');
+      msgEl.style.color = '#c0392b';
+      msgEl.innerText = 'Error de red o servidor.';
+      btn.disabled = false;
+      btn.innerText = 'Cambiar';
     }
-
-    async function cambiar() {
-      const nuevaClave = document.getElementById('nuevaClave').value.trim();
-
-      try {
-        const resp = await fetch('/.netlify/functions/cambiar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, nuevaClave })
-        });
-
-        const data = await resp.json();
-        if (resp.ok) {
-          document.getElementById('mensaje').style.color = '#27ae60';
-          document.getElementById('mensaje').innerText = 'Contraseña actualizada. Revise su correo.';
-        } else {
-          document.getElementById('mensaje').style.color = '#c0392b';
-          document.getElementById('mensaje').innerText = data.error || 'Error al cambiar contraseña.';
-        }
-      } catch (err) {
-        document.getElementById('mensaje').style.color = '#c0392b';
-        document.getElementById('mensaje').innerText = 'Error de red o servidor.';
-      }
-    }
+  }
   </script>
 </body>
 </html>
